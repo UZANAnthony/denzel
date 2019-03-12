@@ -3,8 +3,11 @@ const BodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectID;
 
-const CONNECTION_URL = "mongodb+srv://admin:<PASS>@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
+const CONNECTION_URL = "mongodb+srv://admin:PASS@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
 const DATABASE_NAME = "denzel";
+
+const imdb = require('./src/imdb');
+
 
 var app = Express();
 
@@ -19,8 +22,18 @@ app.listen(3000, () => {
             throw error;
         }
         database = client.db(DATABASE_NAME);
-        collection = database.collection("people");
+        collection = database.collection("movies");
         console.log("Connected to `" + DATABASE_NAME + "`!");
+    });
+});
+
+app.get("/movies/populate", async (Request, response) => {
+    var arr = await imdb("nm0000243");
+    await collection.insertMany(arr, (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        response.send({total: arr.length});
     });
 });
 
