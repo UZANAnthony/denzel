@@ -36,10 +36,13 @@ app.get("/movies/populate", async (Request, response) => {
     });
 });
 
-app.get("/movies", async (Request, response) => {
+app.get("/movies/search", async (Request, response) => {
+    var par1 = Request.query.limit;
+    var par2 = Request.query.metascore;
     await collection.aggregate([
-            {$match: {metascore: {$gte: 70}}},
-            {$sample: {size: 1}}
+            {$match: {metascore: {$gte: Number(par2)}}},
+            {$sort: {metascore: -1}},
+            {$limit: Number(par1)}
         ]).toArray(function(err, docs){
         response.send(docs);
     });
@@ -53,4 +56,17 @@ app.get("/movies/:id", async (request, response) => {
         response.send(result);
     });
 });
+
+app.get("/movies", async (Request, response) => {
+    await collection.aggregate([
+            {$match: {metascore: {$gte: 70}}},
+            {$sample: {size: 1}}
+        ]).toArray(function(err, docs){
+        response.send(docs);
+    });
+});
+
+
+
+
 
