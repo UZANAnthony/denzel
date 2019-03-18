@@ -8,7 +8,6 @@ const DATABASE_NAME = "denzel";
 
 const imdb = require('./src/imdb');
 
-
 var app = Express();
 
 app.use(BodyParser.json());
@@ -37,4 +36,12 @@ app.get("/movies/populate", async (Request, response) => {
     });
 });
 
+app.get("/movies", async (Request, response) => {
+    await collection.aggregate([
+            {$match: {metascore: {$gte: 70}}},
+            {$sample: {size: 1}}
+        ]).toArray(function(err, docs){
+        response.send(docs);
+    })
+});
 
