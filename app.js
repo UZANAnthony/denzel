@@ -42,6 +42,15 @@ app.get("/movies", async (Request, response) => {
             {$sample: {size: 1}}
         ]).toArray(function(err, docs){
         response.send(docs);
-    })
+    });
+});
+
+app.get("/movies/:id", async (request, response) => {
+    collection.findOne({ "id": request.params.id }, (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        response.send(result);
+    });
 });
 
