@@ -66,6 +66,34 @@ app.get("/movies", async (Request, response) => {
     });
 });
 
+app.post("/movies/:id", async (request, response) => {
+    const update = {
+        "$set": 
+        {
+            "date": request.body.date,
+            "review": request.body.review
+        }
+    };
+    const options = { "upsert": false };
+
+    await collection.findOne({ "id": request.params.id }, async (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        await collection.updateOne(result, update, options)
+        .then(result => {
+            const { matchedCount, modifiedCount } = result;
+            if(matchedCount && modifiedCount) {
+                console.log(`Successfully added a new review.`);
+            }
+        })
+        .catch(err => console.error(`Failed to add review: ${err}`))
+        response.send({_id: result._id});
+    });
+});
+
+
+
 
 
 
