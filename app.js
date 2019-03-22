@@ -5,7 +5,7 @@ const ObjectId = require("mongodb").ObjectID;
 var express_graphql = require('express-graphql');
 var { buildSchema } = require('graphql');
 
-const CONNECTION_URL = "mongodb+srv://admin:PASS@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
+const CONNECTION_URL = "mongodb+srv://admin:root@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
 const DATABASE_NAME = "denzel";
 
 const imdb = require('./src/imdb');
@@ -23,8 +23,11 @@ var database, collection;
 var schema = buildSchema(`
     type Query {
       movie: Movie
+      movieID(id: String!): Movie
+      movieSearch(limit: Int!, metascore: Int!): [Movie]
     }
     type Movie {
+      id: String
       link: String
       metascore: Int
       synopsis: String
@@ -38,8 +41,25 @@ var root = {
             {$match: {metascore: {$gte: 70}}},
             {$sample: {size: 1}}
         ]).toArray()
+        console.log(movie)
         return movie[0]
+    },
+
+    movieID: async function(args){
+        var movie = await collection.findOne({ "id": args.id });
+        return movie;
+    },
+
+    movieSearch: async function(args){
+        var movies = await collection.aggregate([
+            {$match: {metascore: {$gte: args.metascore}}},
+            {$sort: {metascore: -1}},
+            {$limit: args.limit}
+        ]).toArray()
+        return movies;
     }
+
+
 };
 
 app.use('/graphql', express_graphql({
