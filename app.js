@@ -79,6 +79,10 @@ app.use('/graphql', express_graphql({
     graphiql: true
 }));
 
+app.get("/", async(req, res) => {
+    res.redirect('/graphql');
+})
+
 
 app.listen(3000, () => {
     MongoClient.connect(CONNECTION_URL, {useNewUrlParser: true}, (error, client) => {
