@@ -2,6 +2,8 @@ const Express = require("express");
 const BodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectID;
+var express_graphql = require('express-graphql');
+var { buildSchema } = require('graphql');
 
 const CONNECTION_URL = "mongodb+srv://admin:PASS@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
 const DATABASE_NAME = "denzel";
@@ -14,6 +16,38 @@ app.use(BodyParser.json());
 app.use(BodyParser.urlencoded({extended: true}));
 
 var database, collection;
+
+
+
+
+var schema = buildSchema(`
+    type Query {
+      movie: Movie
+    }
+    type Movie {
+      link: String
+      metascore: Int
+      synopsis: String
+      title: String
+      year: Int
+    }
+`);
+var root = {
+    movie: async function (){
+        var movie = await collection.aggregate([
+            {$match: {metascore: {$gte: 70}}},
+            {$sample: {size: 1}}
+        ]).toArray()
+        return movie[0]
+    }
+};
+
+app.use('/graphql', express_graphql({
+    schema: schema,
+    rootValue: root,
+    graphiql: true
+}));
+
 
 app.listen(3000, () => {
     MongoClient.connect(CONNECTION_URL, {useNewUrlParser: true}, (error, client) => {
@@ -91,10 +125,4 @@ app.post("/movies/:id", async (request, response) => {
         response.send({_id: result._id});
     });
 });
-
-
-
-
-
-
 
