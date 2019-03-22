@@ -30,7 +30,7 @@ Populate the database
 
 
 Fetch a random must-watch movie
-
+```
 {
   movie{
     title
@@ -38,10 +38,11 @@ Fetch a random must-watch movie
     metascore
   }
 }
+```
 
 
 Fetch a specific movie
-
+```
 {
   movieID(id: "tt0765429"){
     title
@@ -50,10 +51,11 @@ Fetch a specific movie
     date
   }
 }
+```
 
 
 Search for Denzel's movies
-
+```
 {
   movieSearch(limit: 5, metascore: 70){
     title
@@ -61,13 +63,15 @@ Search for Denzel's movies
     metascore
   }
 }
+```
 
 
 Save a watched date and a review.
-
+```
 {
   movieMut(id: "tt0765429", date: "2019-1-1", review: "Awesome!")
 }
+```
 
 ## API REST
 
