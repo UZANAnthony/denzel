@@ -22,10 +22,11 @@ He won 2 Oscars. [Another 82 wins & 166 nominations](https://www.imdb.com/name/n
 ## GRAPHQL
 
 Populate the database
-
+```
 {
   populate
 }
+```
 
 
 Fetch a random must-watch movie
