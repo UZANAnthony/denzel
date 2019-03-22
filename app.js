@@ -1,11 +1,11 @@
+require('dotenv').config()
 const Express = require("express");
 const BodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
-const ObjectId = require("mongodb").ObjectID;
 var express_graphql = require('express-graphql');
 var { buildSchema } = require('graphql');
 
-const CONNECTION_URL = "mongodb+srv://admin:root@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
+const CONNECTION_URL = "mongodb+srv://"+process.env.DB_USER+":"+process.env.DB_PASS+"@denzel-cluster-my1ng.mongodb.net/test?retryWrites=true";
 const DATABASE_NAME = "denzel";
 
 const imdb = require('./src/imdb');
@@ -17,31 +17,38 @@ app.use(BodyParser.urlencoded({extended: true}));
 
 var database, collection;
 
-
-
-
 var schema = buildSchema(`
     type Query {
-      movie: Movie
-      movieID(id: String!): Movie
-      movieSearch(limit: Int!, metascore: Int!): [Movie]
+        populate: Int
+        movie: Movie
+        movieID(id: String!): Movie
+        movieSearch(limit: Int!, metascore: Int!): [Movie]
+        movieMut(id: String!, date: String!, review: String!): String
     }
     type Movie {
-      id: String
-      link: String
-      metascore: Int
-      synopsis: String
-      title: String
-      year: Int
+        id: String
+        link: String
+        metascore: Int
+        synopsis: String
+        title: String
+        year: Int
+        date: String
+        review: String
     }
 `);
+
 var root = {
+    populate: async function(){
+        var arr = await imdb("nm0000243");
+        await collection.insertMany(arr);
+        return arr.length;
+    },
+    
     movie: async function (){
         var movie = await collection.aggregate([
             {$match: {metascore: {$gte: 70}}},
             {$sample: {size: 1}}
         ]).toArray()
-        console.log(movie)
         return movie[0]
     },
 
@@ -57,9 +64,13 @@ var root = {
             {$limit: args.limit}
         ]).toArray()
         return movies;
+    },
+
+
+    movieMut: async function (args) {
+        await collection.updateOne({"id": args.id}, {"$set": {"date": args.date, "review": args.review}});
+        return "done";
     }
-
-
 };
 
 app.use('/graphql', express_graphql({
